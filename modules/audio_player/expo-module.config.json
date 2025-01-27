@@ -1,0 +1,17 @@
+{
+  "platforms": [
+    "apple",
+    "android",
+    "web"
+  ],
+  "apple": {
+    "modules": [
+      "AudioPlayerModule"
+    ]
+  },
+  "android": {
+    "modules": [
+      "expo.modules.audio_player.AudioPlayerModule"
+    ]
+  }
+}
