@@ -1,0 +1,22 @@
+{
+  "code": 0,
+  "message": "0",
+  "ttl": 1,
+  "data": [
+    {
+      "cid": 26691569860,
+      "page": 1,
+      "from": "vupload",
+      "part": "“白衣过泥潭，怎敢说不染。”【祖娅纳惜】借过一下",
+      "duration": 295,
+      "vid": "",
+      "weblink": "",
+      "dimension": {
+        "width": 1920,
+        "height": 1080,
+        "rotate": 0
+      },
+      "first_frame": "http://i1.hdslb.com/bfs/storyff/n241110sa1y1earz6g69tv3rc02lq61g_firsti.jpg"
+    }
+  ]
+}

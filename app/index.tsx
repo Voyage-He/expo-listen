@@ -1,20 +1,26 @@
 import { Pressable, Text, View, StyleSheet, TextInput, Button } from "react-native";
 import { useEffect, useState } from "react";
 import { useAssets } from "expo-asset"
+import { useContext } from "react";
 
-import AudioPlayerModule, { PlaybackState, useAudioPlayer } from "../modules/audio_player";
+import AudioPlayerContext, { useAudioPlayer } from "../modules/audio_player";
 import { Link } from "expo-router";
+import TrackControl from "@/components/TrackControl";
+import usePlaylists from "@/hooks/usePlaylists";
 
 export default function Index() {
   const [assets, error] = useAssets([require("../assets/audio/test.wav")]);
   const [seekPosition, setSeekPosition] = useState("0");
-  const [playbackState, position, duration, play, pause, resume, seek] = useAudioPlayer()
+  const [playbackState, position, duration, play, pause, resume, seek] = useContext(AudioPlayerContext)
+  const [playlists, manipulatePlaylists] = usePlaylists()
 
-  return (<>
+
+  return (<View>
     <View>
       <Link href={"/search"} asChild>
         <Button title="to search" />
       </Link>
+      <TrackControl />
       
     </View>
     <View
@@ -40,8 +46,17 @@ export default function Index() {
       <Pressable onPress={resume}>
         <Text style={style.space}>resume</Text>
       </Pressable>
+
+      <View>
+        <Text>Playlists</Text>
+        {playlists.map((playlist, index) => (
+          <Link href={`/playlist/${playlist.name}`} asChild key={index}>
+            <Text>{playlist.name}</Text>
+          </Link>
+        ))}
+      </View>
     </View>
-  </>);
+  </View>);
 }
 
 const style = StyleSheet.create({

@@ -1,26 +1,18 @@
-import { createSignal, onMount, createEffect, Signal } from "solid-js";
-import { renderHook } from "@solidjs/testing-library"
-import { Preferences } from "@capacitor/preferences";
+import { useState, useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import "./usePlaylists"
 
-function useStorage(key: string, initValue: string): Signal<string>;
-function useStorage<T>(
-  key: string,
-  initValue: T,
-  options: {
-    parser: (value: string) => T,
-    serializer: (value: T) => string,
-}): Signal<T>;
-
-function useStorage<T>(
+export default function useStorage<T>(
   key: string,
   initValue: T,
   options?: {
       parser: (value: string) => T,
       serializer: (value: T) => string,
   }
-): Signal<T> {
+): [T, (newValue: T) => Promise<void>, boolean | null] {
   key = key + "_storage";
-  let [storage, setStorage] = createSignal<T>(initValue);
+  let [storage, setStorage] = useState<T>(initValue);
+  let [isNull, setNull] = useState<boolean | null>(null);
 
   if (!options && typeof initValue !== "string") {
       throw new Error("useStorage: options is required when value is not a string");
@@ -35,33 +27,26 @@ function useStorage<T>(
 
   let { parser, serializer } = options!;
 
-  Preferences.get({ key }).then(({ value: storageString }) => {
-    if (storageString == null) {
-      Preferences.set({ key, value: serializer(initValue) });
-    }
+  AsyncStorage.getItem(key).then((storageString) => {
+    if (storageString != null) setStorage(()=>parser(storageString!));
     else {
-      try {
-        setStorage(()=>parser(storageString));
-      } catch (error) {
-        if (error instanceof Error) {
-          
-        }
-      }
+      AsyncStorage.setItem(key, serializer(initValue));
+      setNull(true);
     }
-  });
+  })
 
-  createEffect(async () => {
-    await Preferences.set({ key, value: serializer(storage()) });
-    
-    // TODO crash because of infinite loop
-    // let { value: localStorage } = await Preferences.get({ key });
-    // console.log(localStorage);
-    // if (localStorage != storage()) {
-    //   setStorage(()=>parser(localStorage!));
-    // }
-  });
+  const saveStorage = async (newValue: T) => {
+    setStorage(newValue);
+    await AsyncStorage.setItem(key, serializer(newValue))
+      .catch(error => {
+        AsyncStorage.getItem(key).then((storageString) => {
+          setStorage(()=>parser(storageString!));
+        })
+        let e = new Error("Failed to save storage, error: " + error);
+        e.name = "AsyncStorageError";
+        throw e;
+      })
+  };
 
-  return [storage, setStorage];
+  return [storage, saveStorage, isNull];
 }
-
-export default useStorage;
